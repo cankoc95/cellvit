@@ -69,13 +69,16 @@ class DataFetcher:
         )
 
         try:
+            print(f"First try to load data file if already exists at: {data_file}")
             data = pd.read_parquet(data_file, engine="pyarrow")
         except Exception:
             print("Couldn't read parquet file, attempting to create it.")
 
         image_paths = DataFetcher._get_image_paths()
-        path_df = pd.DataFrame()
 
+        print(f"Image paths size: {len(image_paths)}")
+
+        path_df = pd.DataFrame()
         for fp in image_paths:
             items = fp.split("/")[-5:]
             d = {
@@ -102,9 +105,11 @@ class DataFetcher:
             how="outer",
         )
 
+        print("Converting to parquet")
         metadata_merged_df.to_parquet(data_file, engine="pyarrow")
 
         try:
+            print(f"Try again reading from data file: {data_file}.")
             data = pd.read_parquet(data_file, engine="pyarrow")
         except Exception as e:
             print(f"Error when reading data {e}")

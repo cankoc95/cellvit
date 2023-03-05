@@ -1,6 +1,7 @@
 import pandas as pd
 import glob
 import os
+from datasets import Dataset
 
 
 class DataFetcher:
@@ -8,6 +9,7 @@ class DataFetcher:
     dataset_name = "moshkov"
     _broad_dir = ""
     _image_paths = []
+    _class_labels_to_int = {}
 
     @staticmethod
     def _get_sc_metadata():
@@ -31,6 +33,13 @@ class DataFetcher:
             lambda x: x["Image_Name"].split("/")[-1], axis=1
         )
         # Select only the columns specified in columns_to_keep
+        class_labels = metadata_df.Treatment.unique().tolist()
+        class_labels.sort()
+        DataFetcher._class_labels_to_int = {}
+
+        for i, lab in enumerate(class_labels):
+          DataFetcher._class_labels_to_int[lab] = i
+
         return metadata_df[
             [
                 "Collection",
@@ -57,6 +66,45 @@ class DataFetcher:
             )
 
         return DataFetcher._image_paths
+
+
+    @staticmethod
+    def create_train_dev_split(data, output_dir, dev_size=0.2):
+      train_outputdir = output_dir + "/train"
+      dev_outputdir = output_dir + "/dev"
+
+      train_dev_splitted = Dataset.from_pandas(data).train_test_split(test_size=dev_size)
+      dev_Ds = train_dev_splitted['test']
+      train_Ds = train_dev_splitted['train']
+
+      dev_df = dev_Ds.to_pandas()
+      train_df = train_Ds.to_pandas()
+      
+      if not os.path.exists(dev_outputdir):
+        os.makedirs(dev_outputdir)
+
+      dev_df.to_parquet(dev_outputdir + "/data.parquet", engine="pyarrow")
+
+      print(f"Saved dev data with shape {dev_df.shape} to {dev_outputdir}")
+
+      if not os.path.exists(train_outputdir):
+          os.makedirs(train_outputdir)
+
+      train_df.to_parquet(train_outputdir + "/data.parquet", engine="pyarrow")
+
+      print(f"Saved train data with shape {train_df.shape} to {train_outputdir}")
+
+    @staticmethod
+    def clean_data(data):
+      data_cleaned = data.dropna()
+      return data_cleaned
+
+    @staticmethod
+    def repeat_channels(data):
+      n = data.shape[0]
+      data = data.loc[data.index.repeat(5)]
+      data["Channel"] = [1, 2, 3, 4, 5]*(n)
+      return data
 
     @staticmethod
     def fetch(broad_dir):
@@ -102,8 +150,11 @@ class DataFetcher:
                 "Metadata_Site",
                 "PathId",
             ],
-            how="outer",
+            how="left", # should we change to outer join?
         )
+
+        metadata_merged_df['labels'] = metadata_merged_df["Treatment"].replace(
+          to_replace=DataFetcher._class_labels_to_int)
 
         print("Converting to parquet")
         metadata_merged_df.to_parquet(data_file, engine="pyarrow")

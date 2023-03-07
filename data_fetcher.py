@@ -12,51 +12,6 @@ class DataFetcher:
     _class_labels_to_int = {}
 
     @staticmethod
-    def _get_sc_metadata():
-        metadata_df = pd.read_csv(
-            DataFetcher._broad_dir + "/workspace_dl/metadata/sc-metadata.csv",
-            dtype={
-                "Collection": str,
-                "Metadata_Plate": str,
-                "Metadata_Well": str,
-                "Metadata_Site": str,
-                "Image_Name": str,
-                "Treatment": str,
-                "Treatment_Type": str,
-                "Control": str,
-                "LeaveReplicatesOut": str,
-                "LeaveCellsOut": str,
-            },
-        )
-
-        metadata_df["PathId"] = metadata_df.apply(
-            lambda x: x["Image_Name"].split("/")[-1], axis=1
-        )
-        # Select only the columns specified in columns_to_keep
-        class_labels = metadata_df.Treatment.unique().tolist()
-        class_labels.sort()
-        DataFetcher._class_labels_to_int = {}
-
-        for i, lab in enumerate(class_labels):
-          DataFetcher._class_labels_to_int[lab] = i
-
-        return metadata_df[
-            [
-                "Collection",
-                "Metadata_Plate",
-                "Metadata_Well",
-                "Metadata_Site",
-                "Image_Name",
-                "PathId",
-                "Treatment",
-                "Treatment_Type",
-                "Control",
-                "LeaveReplicatesOut",
-                "LeaveCellsOut",
-            ]
-        ]
-
-    @staticmethod
     def _get_image_paths():
         if len(DataFetcher._image_paths) == 0:
             DataFetcher._image_paths = list(
@@ -107,6 +62,38 @@ class DataFetcher:
       return data
 
     @staticmethod
+    def get_sc_metadata(broad_dir):
+        metadata_df = pd.read_csv(
+            DataFetcher._broad_dir + "/workspace_dl/metadata/sc-metadata.csv",
+            dtype={
+                "Collection": str,
+                "Metadata_Plate": str,
+                "Metadata_Well": str,
+                "Metadata_Site": str,
+                "Image_Name": str,
+                "Treatment": str,
+                "Treatment_Type": str,
+                "Control": str,
+                "LeaveReplicatesOut": str,
+                "LeaveCellsOut": str,
+            },
+        )
+
+        return metadata_df
+
+    @staticmethod
+    def get_labels_dict(metadata):
+      # Select only the columns specified in columns_to_keep
+      class_labels = metadata.Treatment.unique().tolist()
+      class_labels.sort()
+      DataFetcher._class_labels_to_int = {}
+
+      for i, lab in enumerate(class_labels):
+        DataFetcher._class_labels_to_int[lab] = i
+
+      return DataFetcher._class_labels_to_int
+
+    @staticmethod
     def fetch(broad_dir):
         DataFetcher._broad_dir = broad_dir
         if not os.path.exists(DataFetcher.cache_dir):
@@ -139,7 +126,28 @@ class DataFetcher:
             }
             path_df = path_df.append(d, ignore_index=True)
 
-        metadata_df = DataFetcher._get_sc_metadata()
+        metadata_df = DataFetcher.get_sc_metadata(broad_dir)
+        metadata_df = metadata_df[[
+                "Collection",
+                "Metadata_Plate",
+                "Metadata_Well",
+                "Metadata_Site",
+                "Image_Name",
+                "PathId",
+                "Treatment",
+                "Treatment_Type",
+                "Control",
+                "LeaveReplicatesOut",
+                "LeaveCellsOut",
+                ]
+        ]
+
+        DataFetcher.get_labels_dict(metadata_df)  # Will setup class variable for mapping labels to int
+
+        metadata_df["PathId"] = metadata_df.apply(
+            lambda x: x["Image_Name"].split("/")[-1], axis=1
+        )
+
         metadata_merged_df = pd.merge(
             metadata_df,
             path_df,

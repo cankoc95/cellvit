@@ -107,6 +107,7 @@ class DataFetcher:
         try:
             print(f"First try to load data file if already exists at: {data_file}")
             data = pd.read_parquet(data_file, engine="pyarrow")
+            return data
         except Exception:
             print("Couldn't read parquet file, attempting to create it.")
 

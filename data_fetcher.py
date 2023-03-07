@@ -95,6 +95,7 @@ class DataFetcher:
 
     @staticmethod
     def fetch(broad_dir):
+        print("Started")
         DataFetcher._broad_dir = broad_dir
         if not os.path.exists(DataFetcher.cache_dir):
             os.makedirs(DataFetcher.cache_dir)
@@ -127,6 +128,9 @@ class DataFetcher:
             path_df = path_df.append(d, ignore_index=True)
 
         metadata_df = DataFetcher.get_sc_metadata(broad_dir)
+        metadata_df["PathId"] = metadata_df.apply(
+            lambda x: x["Image_Name"].split("/")[-1], axis=1
+        )
         metadata_df = metadata_df[[
                 "Collection",
                 "Metadata_Plate",
@@ -143,10 +147,6 @@ class DataFetcher:
         ]
 
         DataFetcher.get_labels_dict(metadata_df)  # Will setup class variable for mapping labels to int
-
-        metadata_df["PathId"] = metadata_df.apply(
-            lambda x: x["Image_Name"].split("/")[-1], axis=1
-        )
 
         metadata_merged_df = pd.merge(
             metadata_df,

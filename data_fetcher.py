@@ -64,7 +64,7 @@ class DataFetcher:
     @staticmethod
     def get_sc_metadata(broad_dir):
         metadata_df = pd.read_csv(
-            DataFetcher._broad_dir + "/workspace_dl/metadata/sc-metadata.csv",
+            broad_dir + "/workspace_dl/metadata/sc-metadata.csv",
             dtype={
                 "Collection": str,
                 "Metadata_Plate": str,

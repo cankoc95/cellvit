@@ -25,6 +25,11 @@ class DataFetcher:
 
     @staticmethod
     def create_train_dev_split(data, output_dir, dev_size=0.2):
+      """
+      Creates train and dev split
+
+      Before calling this function it's a good idea to call clean and then add channels into the data.
+      """
       train_outputdir = output_dir + "/train"
       dev_outputdir = output_dir + "/dev"
 

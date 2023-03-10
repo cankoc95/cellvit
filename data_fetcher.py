@@ -7,6 +7,7 @@ from datasets import Dataset
 class DataFetcher:
     cache_dir = "./cache/"
     dataset_name = "moshkov"
+    c037_dataset_name = "c037_10k"
     _broad_dir = ""
     _image_paths = []
     _class_labels_to_int = {}
@@ -168,6 +169,93 @@ class DataFetcher:
         )
 
         metadata_merged_df['labels'] = metadata_merged_df["Treatment"].replace(
+          to_replace=DataFetcher._class_labels_to_int)
+
+        print("Converting to parquet")
+        metadata_merged_df.to_parquet(data_file, engine="pyarrow")
+
+        try:
+            print(f"Try again reading from data file: {data_file}.")
+            data = pd.read_parquet(data_file, engine="pyarrow")
+        except Exception as e:
+            print(f"Error when reading data {e}")
+
+        print(f"{data_file} loaded successfully!")
+
+        return data
+
+    @staticmethod
+    def fetchBBBC037(broad_dir, metadata_file):
+        """
+        Creates or loads a new dataframe where metadata is combined with paths to the images.
+
+        broad_dir: Path to broad data dir.
+        metadata_file: Path to c037_10k_metadata.parquet file.
+        """
+        DataFetcher._broad_dir = broad_dir
+        if not os.path.exists(DataFetcher.cache_dir):
+            os.makedirs(DataFetcher.cache_dir)
+
+        data_file = os.path.join(
+            DataFetcher.cache_dir, DataFetcher.c037_dataset_name + ".parquet"
+        )
+
+        try:
+            print(f"First try to load data file if already exists at: {data_file}")
+            data = pd.read_parquet(data_file, engine="pyarrow")
+            return data
+        except Exception:
+            print("Couldn't read parquet file, attempting to create it.")
+        
+        image_paths = DataFetcher._get_image_paths()
+
+        print(f"Image paths size: {len(image_paths)}")
+
+        path_df = pd.DataFrame()
+        for fp in image_paths:
+            items = fp.split("/")[-5:]
+            d = {
+                "Collection": items[0],
+                "Metadata_Plate": items[1],
+                "Metadata_Well": items[2],
+                "Metadata_Site": items[3],
+                "PathId": items[4],
+                "Path": fp,
+            }
+            path_df = path_df.append(d, ignore_index=True)
+
+        metadata_df = pd.read_parquet(metadata_file, engine="pyarrow")
+        metadata_df = metadata_df[[
+                "Collection",
+                "Metadata_Plate",
+                "Metadata_Well",
+                "Metadata_Site",
+                "Image_Name",
+                "PathId",
+                "Treatment",
+                "Treatment_Type",
+                "Control",
+                "LeaveReplicatesOut",
+                "LeaveCellsOut",
+                ]
+        ]
+
+        DataFetcher.get_labels_dict(metadata_df)  # Will setup class variable for mapping labels to int
+
+        metadata_merged_df = pd.merge(
+            metadata_df,
+            path_df,
+            on=[
+                "Collection",
+                "Metadata_Plate",
+                "Metadata_Well",
+                "Metadata_Site",
+                "PathId",
+            ],
+            how="inner",  # Assumes that all of our custom c037 data is available.
+        )
+
+        metadata_merged_df['Labels'] = metadata_merged_df["Treatment"].replace(
           to_replace=DataFetcher._class_labels_to_int)
 
         print("Converting to parquet")

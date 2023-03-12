@@ -31,8 +31,6 @@ class MaxVitDataset(torch.utils.data.Dataset):
         return image, label
     
     def __read_image(self, img_path, channel):
-      assert channel in range(1,6)
-
       raw_image = cv2.imread(img_path, 0) # 0 to read in grayscale
       # calculate the square size of the raw image assuming it is a 1x6 grid
       square_size = int(len(raw_image[0,:])/6)
@@ -41,9 +39,7 @@ class MaxVitDataset(torch.utils.data.Dataset):
       img = np.array(np.hsplit(gray_image, 5))[channel-1]
       img_resized = cv2.resize(img, (self.image_size, self.image_size))
       img_rgb = (np.stack([img_resized, img_resized, img_resized], axis=2) / 255.).astype(np.float32)
-      img_tensor = torch.from_numpy(img_rgb)
-      img_tensor = img_tensor.permute(2, 0, 1)
-      return img_tensor
+      return torch.from_numpy(img_rgb).permute(2, 0, 1)
 
     def __load_data(self):
         df = pd.read_parquet(f"{self.data_dir}/{self.split}/data.parquet", engine="pyarrow")

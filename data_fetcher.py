@@ -7,7 +7,7 @@ from datasets import Dataset
 class DataFetcher:
     cache_dir = "./cache/"
     dataset_name = "moshkov"
-    c037_dataset_name = "c037_10k"
+    c037_dataset_name = "c037_14k"
     _broad_dir = ""
     _image_paths = []
     _class_labels_to_int = {}

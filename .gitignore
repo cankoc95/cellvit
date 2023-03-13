@@ -130,3 +130,6 @@ dmypy.json
 
 # Editors
 .vscode/
+
+# Large Cell Painting Metadata Files
+metadata/

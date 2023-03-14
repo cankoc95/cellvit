@@ -133,3 +133,5 @@ dmypy.json
 
 # Large Cell Painting Metadata Files
 metadata/
+
+.DS_Store

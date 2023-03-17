@@ -19,25 +19,24 @@ function Home() {
    
     
       <div style={{position: "relative"}}> 
-      <img src={callpaintimage} style={{ width: "100%", height: "92vh" }}/>
+      <img src={callpaintimage} style={{ width: "100%", height: "50vh" }}/>
       <div style={{
 						position: "absolute",
 						zIndex: "100",
 						top: "100px",
-						left: "20px",
+						left: "50px",
 						textAlign: "center",
 					}}>
-      <Typography variant="h1" style={{ color: "white", fontWeight: "bolder" }}>WELCOME TO <span style={{color: 'white'}}>CELLViT</span></Typography>
-      <Button variant="contained" sx={{
+      <Typography variant="h1" style={{ color: "white", fontWeight: "bolder" }}>Welcome to <span style={{color: 'red'}}>CELLViT</span> Project Page</Typography>
+      {/* <Button variant="contained" sx={{
 							fontSize: "1.5rem",
 							borderRadius: "10px",
 							backgroundColor: "green",
 							marginTop: "2rem",
                             marginLeft: "-40rem"
 							
-						}}>Get Started</Button>
+						}}>Get Started</Button> */}
       </div>
-
       </div>
       
   </>

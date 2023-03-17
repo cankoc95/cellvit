@@ -3,7 +3,16 @@ import { Link, useNavigate } from "react-router-dom"
 
 
 //MUI imports
-import { Button , Typography, Grid, AppBar, Toolbar} from '@mui/material';
+import { Button , Typography, Grid, AppBar, Toolbar, Stack} from '@mui/material';
+
+//Assets
+// import websitelogo from './Assets/websitelogo.png';
+// import AwesumEdgeCompleteLogo from './Assets/AwesumEdgeCompleteLogo.jpg';
+import Logo2 from './Assets/Logo2.jpg';
+
+
+
+
 
 
 
@@ -14,59 +23,16 @@ function Header() {
     <AppBar position="static" style={{ backgroundColor: "black"}}>
     <Toolbar>
     <div style={{ marginRight: "auto" }}>
+    {/* <img src={Logo2 } onClick={() => navigate("/")} style={{ width: "100%", height: "6vh"}}/ > */}
     <Button color="inherit" onClick={() => navigate("/")}><Typography variant="h4">CellViT</Typography></Button>
+    {/* <h2 color="inherit" onClick={() => navigate("/")}>CELLViT</h2> */}
     </div>
-    <div>
-    <Button color="inherit" onClick={() => navigate("/demo")} style={{
-        marginRight: "2rem",
-    //     "&:hover": {
-    // backgroundColor: "blue",
-    //     },
-        }}><Typography variant="h6">Demo</Typography></Button>
-      <Button color="inherit" onClick={() => navigate("/data")} style={{marginLeft: "2rem"}}><Typography variant="h6">Data</Typography></Button>  
-      <Button onClick={() => navigate("/team")} style={{
-							// backgroundColor: "green",
-							color: "white",
-							width: "15rem",
-							fontSize: "0.8rem",
-							// marginRight: "1rem",
-							// "&:hover": {
-							// 	backgroundColor: "blue",
-							// },
-						}}>Team</Button>
-      <Button style={{
-								// backgroundColor: "white",
-								color: "white",
-								width: "15rem",
-								fontSize: "0.8rem",
-								marginLeft: "1rem",
-								// "&:hover": {
-								// 	backgroundColor: "green",
-								// },
-							}}onClick={() => navigate("/github")}>Github</Button>          
-    </div>
-    {/* <div style={{ marginLeft: "auto", marginRight: "10rem" }}>
-    <Button onClick={() => navigate("/team")} style={{
-							// backgroundColor: "green",
-							color: "white",
-							width: "15rem",
-							fontSize: "1.1rem",
-							// marginRight: "1rem",
-							// "&:hover": {
-							// 	backgroundColor: "blue",
-							// },
-						}}>Team</Button>
-      <Button style={{
-								// backgroundColor: "white",
-								color: "white",
-								width: "15rem",
-								fontSize: "1.1rem",
-								marginLeft: "1rem",
-								// "&:hover": {
-								// 	backgroundColor: "green",
-								// },
-							}}onClick={() => navigate("/github")}>Github</Button>
-    </div>    */}
+    <Stack direction='row' spacing={2} style={{ display: "flex", width:"100%", justifyContent: "center", alignItems: "center", }}>
+    <Button color='inherit' sx={{ textDecoration: "none", ":hover": {textDecoration:"underline", textUnderlineOffset:"5px", textDecorationColor: "red"}}} onClick={() => navigate("/")}>Home</Button>
+    <Button color='inherit' sx={{ textDecoration: "none", ":hover": {textDecoration:"underline", textUnderlineOffset:"5px", textDecorationColor: "red"}}} onClick={() => navigate("/demo")}>Demo</Button>
+    <Button color='inherit' sx={{ textDecoration: "none", ":hover": {textDecoration:"underline", textUnderlineOffset:"5px", textDecorationColor: "red"}}} onClick={() => navigate("/data")}>Data</Button>
+    <Button color='inherit' sx={{ textDecoration: "none", ":hover": {textDecoration:"underline", textUnderlineOffset:"5px", textDecorationColor: "red"}}} onClick={() => navigate("/team")}>Team</Button>
+     </Stack>  
       
     </Toolbar>
   </AppBar>

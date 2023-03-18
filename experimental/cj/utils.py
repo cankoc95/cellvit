@@ -37,6 +37,7 @@ def convert_img_to_5_channel_array(img_path: str, square_size:int, image_size: i
   # split the image into the 5 fluorescent channels
   return five_channel_array, treatment_label
 
+
 def get_all_file_paths(directory):
   '''
     Get all file paths in a directory.
@@ -69,23 +70,34 @@ def get_all_file_paths(directory):
   return file_paths
 
 
-def get_model_input_arrays(root_path: str, collection: str, square_size: int, image_size: int):
+def get_unique_treatment_labels(directory):
+  label_directories = os.listdir(directory)
+  treatment_labels = []
+  # iterate over all the labels in the directory
+  for i in label_directories:
+    treatment_labels.append(i.split('/')[-2])
+  return list(set(treatment_labels))
+
+
+def get_model_input_arrays(data_path: str, directory_list=['test','val','train'], square_size=160, image_size=224):
   '''
   This function takes a root path, collection, and image parameters and returns a tuple of 5 channel arrays for training, validation, and test sets.
 
   Parameters:
-    root_path (str): the root path to the image directory
-    collection (str): the collection name
+    data_path (str): the root path to the image directory
     square_size (int): the size of the square to remove from the bottom of the image
     image_size (int): the size of the image to convert to
   '''
-  for i in ["train", "val", "test"]:
-    # initialize empty lists for the training, validation, and test sets
+  # initialize empty lists for the training, validation, and test sets
+  X_train, y_train, X_val, y_val, X_test, y_test = [], [], [], [], [], []
+
+  for i in directory_list:
+    # initialize empty lists for looping through the images
     X_list_tmp, y_list_tmp = [], []
-    print("Hello from " + i + "!")
+    print("Starting to convert images to 5 channel arrays for: " + i)
     
     # get a complete list of all absolute image paths
-    img_paths = get_all_file_paths(root_path + collection + "/" + i)
+    img_paths = get_all_file_paths(data_path + "/" + i)
 
     # convert images to 5 channel np.ndarray, get treatment label, and append to the appropriate list
     # print("Starting to convert images to 5 channel arrays for: " + i)
@@ -96,7 +108,7 @@ def get_model_input_arrays(root_path: str, collection: str, square_size: int, im
       y_list_tmp.append(img_tuple[1])
       if len(X_list_tmp) % 5000 == 0:
         print("Processed " + str(len(X_list_tmp)) + " images for " + i + " set.")
-    
+        print(len(X_list_tmp), len(y_list_tmp), X_list_tmp[-1].shape, y_list_tmp[-1])
     # save the lists as numpy arrays
     if i == "train":
       X_train = np.array(X_list_tmp)

@@ -10,8 +10,8 @@ import ope from './Assets/ope.JPG';
 function Team() {
   return (
     <container>
-    <Typography style={{margin:"2.5rem", }} align= "center" variant="h4">Capstone Project Team</Typography>
-        <Grid style={{margin:"auto", }}container spacing={2}>
+    <Typography style={{margin:"5rem", }} align= "center" variant="h4">Capstone Project Team</Typography>
+        <Grid style={{margin:"auto", }} container spacing={1}>
             <Grid item xs={12} sm = {6} md= {3}>
             <Card sx={{ maxWidth: 345 }}>
       <CardActionArea>
@@ -143,7 +143,7 @@ function Team() {
     </Card>
             </Grid>
 
-            <Grid item xs={12} sm= {6}>
+            <Grid paddingBottom= {5} item xs={12} sm= {6}>
             <Card sx={{ maxWidth: 345 }}>
       <CardActionArea>
         <CardMedia

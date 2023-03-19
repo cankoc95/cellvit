@@ -1,11 +1,11 @@
 import React from 'react'
 
-function Demo() {
+function References() {
   return (
     <div style={{margin:"5rem", }} >
-        <h1>This is the demo page</h1>
+        <h1>This is the reference page</h1>
     </div>
   )
 }
 
-export default Demo
+export default References

@@ -9,28 +9,30 @@ import CssBaseline from '@mui/material/CssBaseline';
 import Home from "./Components/Home";
 import Data from "./Components/Data";
 import Demo from "./Components/Demo";
-import Github from "./Components/Github";
+import References from "./Components/References";
 import Team from "./Components/Team";
 import Header from "./Components/Header";
 import Footer from "./Components/Footer";
+
+const linksArray = ["home", "demo", "data", "team", "references"];
 
 function App() {
   return (
     <>
     <BrowserRouter>
     <CssBaseline />
-    <Header />
+    <Header links={linksArray} />
     <Routes>
     <Route path = '/' element= {<Home />}/>
     <Route path = '/demo' element= {<Demo />}/>
     <Route path = '/data' element= {<Data />}/>
     <Route path = '/team' element= {<Team />}/>
-    <Route path = '/github' element= {<Github />}/>     
+    <Route path = '/references' element= {<References />}/>     
     
     </Routes>
     
     </BrowserRouter>
-    {/* <Footer /> */}
+    <Footer />
     </>
   );
 }

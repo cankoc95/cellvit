@@ -42,8 +42,9 @@ class MaxVitDataset(torch.utils.data.Dataset):
       return torch.from_numpy(img_rgb).permute(2, 0, 1)
 
     def __load_data(self):
-        df = pd.read_parquet(f"{self.data_dir}/{self.split}/data.parquet", engine="pyarrow")
+        df = pd.read_parquet(f"{self.data_dir}/{self.split}/data.parquet", engine="pyarrow", columns=["Labels", "Path", "Channel"])
         self.img_labels = df['Labels'].to_list()
         self.img_paths = df['Path'].to_list()
         self.img_channels = df['Channel'].to_list()
+        del df
 

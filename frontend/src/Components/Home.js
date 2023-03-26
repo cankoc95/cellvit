@@ -9,13 +9,32 @@ import { Button, Typography, Box, useMediaQuery, useTheme} from '@mui/material';
 import Header from './Header'; 
 
 //Assets
-import callpaintimage from './Assets/callpaintimage.jpg';
-import biologicalscientists from './Assets/biologicalscientists.jpg';
+import callpaintimage2 from './Assets/callpaintimage2.jpg';
+
+
+
+// import { createTheme, ThemeProvider } from '@mui/material/styles';
+
+// const theme1 = createTheme({
+//   status: {
+//     danger: '#e53e3e',
+//   },
+//   palette: {
+//     primary: {
+//       main: '#0971f1',
+//       darker: '#053e85',
+//     },
+//     neutral: {
+//       main: '#64748B',
+//       contrastText: '#fff',
+//     },
+//   },
+// });
 
 
 
 function Home() {
-    const [btnColor, setBtnColor] = useState("error");
+    
     const theme = useTheme();
     const isMatch = useMediaQuery(theme.breakpoints.down('md'));
     
@@ -23,32 +42,37 @@ function Home() {
     <>
    
     
-      <Box style={{position: "relative"}}> 
-      <img src={callpaintimage} alt="cellpaint" style={{ width: "100%", height: "50vh" }}/>
+      <Box style={{position: "relative", }}> 
+      <img src={callpaintimage2} alt="cellpaint" style={{ width: "100%", height: "90vh" }}/>
       <div style={{
 						position: "absolute",
 						zIndex: "100",
-						top: "100px",
+						top: "250px",
 						left: "50px",
 						textAlign: "center",
 					}}>
-      <Typography fontSize={{lg:70, md:60, sm:45, xs:30}} style={{ color: "white", fontWeight: "bolder" }}>Welcome to <span style={{color: 'red'}}>CELLViT</span> Project Page</Typography>    
+      <Typography fontSize={{lg:70, md:60, sm:45, xs:30}} style={{ color: "white", fontWeight: "bolder" }}>Welcome to CELLViT</Typography>
+      <Typography variant="body1" paragraph fontSize={{lg:35, md:30, sm:20, xs:16}} style={{ color: "white", fontWeight: "bolder", align: "center" }}>Accelerating drug and biomarker discovery with AI-based cell painting</Typography> 
+      
+      <Button variant="outlined" color="error" href="https://drive.google.com/drive/folders/1nU_J764-zvR390j358e1TYrwUScFHv9T" sx={{
+							fontSize: "1.5rem",
+              fontWeight: "bolder",
+              color: "white",
+							position: "relative",
+              
+							}}>TRY OUR MODEL</Button>
+
+{/* <ThemeProvider theme1={theme1}>
+  <Button color="neutral" variant="outlined">
+    neutral
+  </Button>
+</ThemeProvider> */}
+      
       </div>
+    
       </Box>
-      <Box style={{position: "relative"}} bgcolor= "#fff" padding={5} display="flex" justifyContent={"space-between"} alignItems="center" flexDirection={isMatch ? "column" : "row"}>
-      <Box>
-     <Typography fontSize={{lg:24, md:20, sm:16, xs:12}}> It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).
-     </Typography>
-      </Box>
+   
       
-      <img src={biologicalscientists} alt="biologicalscientist" loading="lazy" width={isMatch ? "100%" : "50%" } style={{marginLeft: "10%", borderRadius: 20}} height="300px"/>
-      {/* <Link variant="body2" href="https://studentscholarships.org/salary/487/biological_scientists.php" underline="none">
-          <Typography padding={5} marginTop={14} marginLeft={-10} style={{color:"blue", position: "absolute"}} variant="body2" component="div">
-          Source
-          </Typography></Link> */}
-      
-          
-      </Box>
       
       
       

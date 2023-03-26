@@ -8,13 +8,14 @@ import CssBaseline from '@mui/material/CssBaseline';
 // Components
 import Home from "./Components/Home";
 import Data from "./Components/Data";
-import Demo from "./Components/Demo";
+import Motivation from "./Components/Motivation";
 import References from "./Components/References";
 import Team from "./Components/Team";
 import Header from "./Components/Header";
 import Footer from "./Components/Footer";
 
-const linksArray = ["home", "demo", "data", "team", "references"];
+
+const linksArray = ["home", "motivation", "data", "team", "references"];
 
 function App() {
   return (
@@ -24,7 +25,7 @@ function App() {
     <Header links={linksArray} />
     <Routes>
     <Route path = '/' element= {<Home />}/>
-    <Route path = '/demo' element= {<Demo />}/>
+    <Route path = '/motivation' element= {<Motivation />}/>
     <Route path = '/data' element= {<Data />}/>
     <Route path = '/team' element= {<Team />}/>
     <Route path = '/references' element= {<References />}/>     

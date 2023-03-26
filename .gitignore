@@ -134,5 +134,7 @@ dmypy.json
 # Large Cell Painting Metadata Files
 metadata/
 experimental/cj/metadata.parquet
+./cellvit/experimental/cj/checkpoint.pth.tar
+experimental/cj/model_best.pth.tar
 
 .DS_Store

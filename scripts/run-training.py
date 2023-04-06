@@ -14,6 +14,7 @@ from datasets import Dataset
 from torchvision import transforms, utils
 from torch.utils.data import DataLoader
 import torch.optim as optim
+from torchmetrics.classification import MulticlassF1Score
 from torch.optim import lr_scheduler
 from transformers import get_linear_schedule_with_warmup
 from tqdm import tqdm
@@ -66,8 +67,8 @@ class CFG:
   num_classes = len(class_labels_to_int)
   ### model
   model_name = 'maxvit_large_tf_224'
-  model_checkpoint = CELL_PAINTING_DIR + '/MaxVitModel_ep0.6601821493624772.pth'
-  optimizer_checkpoint = CELL_PAINTING_DIR + '/optimizer.pt'
+  model_checkpoint = CELL_PAINTING_DIR + '/MaxVitModel_ep0.6706739526411658.pth'
+  # optimizer_checkpoint = CELL_PAINTING_DIR + '/optimizer.pt'
   pretrained=True
   batch_size = 16
   num_epochs = 30
@@ -163,6 +164,17 @@ def set_seed(cfg):
     if cfg.n_gpu > 0:
         torch.cuda.manual_seed_all(cfg.random_seed)
 
+def f1_score(y_pred, y_true):
+    epsilon = 1e-7  # to avoid division by zero
+    y_pred = torch.round(y_pred)  # round predicted probabilities to binary labels
+    tp = torch.sum(y_true * y_pred, dim=0)
+    fp = torch.sum((1 - y_true) * y_pred, dim=0)
+    fn = torch.sum(y_true * (1 - y_pred), dim=0)
+    precision = tp / (tp + fp + epsilon)
+    recall = tp / (tp + fn + epsilon)
+    f1 = 2 * precision * recall / (precision + recall + epsilon)
+    return torch.mean(f1)
+
 def train_model(cfg, model, dataloaders, criterion, optimizer):
     since = time.time()
 
@@ -177,6 +189,8 @@ def train_model(cfg, model, dataloaders, criterion, optimizer):
     best_checkpoint_path = CFG.checkpoint_best
     best_scheduler_path = os.path.join(best_checkpoint_path, 'scheduler.pt')
     best_optimizer_path = os.path.join(best_checkpoint_path, 'optimizer.pt')
+
+    f1_metric = MulticlassF1Score(num_classes=CFG.num_classes).to(device)
 
     for epoch in range(cfg.num_epochs):
         print('Epoch {}/{}'.format(epoch, cfg.num_epochs - 1))
@@ -193,6 +207,7 @@ def train_model(cfg, model, dataloaders, criterion, optimizer):
 
             running_loss = 0.0
             running_corrects = 0
+            total_f1 = 0
 
             # Iterate over data.
             for inputs, labels in tqdm(dataloaders[phase]):
@@ -216,20 +231,29 @@ def train_model(cfg, model, dataloaders, criterion, optimizer):
                         loss.backward()
                         optimizer.step()
 
+                    if phase == 'dev':
+                        # f1 = f1_score(outputs, labels)  # compute f1 score
+                        f1 = f1_metric(outputs, labels)
+                        total_f1 += f1.item()
+
                 # statistics
                 running_loss += loss.item() * inputs.size(0)
                 running_corrects += torch.sum(preds == labels.data)
 
             epoch_loss = running_loss / len(dataloaders[phase].dataset)
             epoch_acc = running_corrects.double() / len(dataloaders[phase].dataset)
-            
-            print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
+            epoch_f1 = total_f1 / len(dataloaders[phase].dataset)
 
             wblogdict[f'{phase}/loss'] = np.round(epoch_loss, 4)
             wblogdict[f'{phase}/acc'] = np.round(epoch_acc.cpu(), 4)
 
-            if phase == "train":
-              wblogdict['train/learning_rate'] = CFG.learning_rate
+            if phase == 'train':
+                wblogdict['train/learning_rate'] = CFG.learning_rate
+                print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
+
+            if phase == 'dev':
+                wblogdict[f'{phase}/f1'] = np.round(epoch_f1, 4)
+                print('{} Loss: {:.4f} Acc: {:.4f} F1 Score {:.4f}'.format(phase, epoch_loss, epoch_acc, epoch_f1))
 
             if not os.path.exists(last_checkpoint_path):
                 os.makedirs(last_checkpoint_path)
@@ -321,7 +345,7 @@ if __name__ == "__main__":
     # optimizer_ft = optim.SGD(model_ft.parameters(), lr=5e-5, momentum=0.9)
 
     optimizer_ft = AdamW(model_ft.parameters(), lr=CFG.learning_rate, eps=CFG.adam_epsilon, weight_decay=CFG.weight_decay)
-    optimizer_ft.load_state_dict(torch.load(CFG.optimizer_checkpoint))
+    # optimizer_ft.load_state_dict(torch.load(CFG.optimizer_checkpoint))
 
     # scheduler = lr_scheduler.ReduceLROnPlateau(optimizer_ft, factor=CFG.plateau_factor, patience=CFG.plateau_patience)
     criterion = nn.CrossEntropyLoss()

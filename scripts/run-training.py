@@ -14,7 +14,7 @@ from datasets import Dataset
 from torchvision import transforms, utils
 from torch.utils.data import DataLoader
 import torch.optim as optim
-from torchmetrics.classification import MulticlassF1Score
+from sklearn.metrics import f1_score
 from torch.optim import lr_scheduler
 from transformers import get_linear_schedule_with_warmup
 from tqdm import tqdm
@@ -81,7 +81,7 @@ class CFG:
   optimizer = 'adamw' # ["rmsprop", "adam"]
   learning_rate = 5e-5
   adam_epsilon = 1e-6
-  weight_decay = 1e-8 # for adamw
+  weight_decay = 1e-6 # for adamw
   l2_penalty = 0.01 # for RMSprop
   rms_momentum = 0 # for RMSprop
 
@@ -133,11 +133,6 @@ class MaxVitClassifier(nn.Module):
         self.model = timm.create_model(cfg.model_name, 
                                        pretrained=cfg.pretrained, 
                                        num_classes=cfg.num_classes)
-        # n_features = self.model.head.in_features
-        # self.model.head = nn.Linear(n_features, num_classes)
-        # self.model.fc = nn.Linear(n_features, num_classes)
-        if checkpoint:
-          self.model.load_state_dict(torch.load(checkpoint), strict=False)
 
     def forward(self, x):
         x = self.model(x)
@@ -164,16 +159,16 @@ def set_seed(cfg):
     if cfg.n_gpu > 0:
         torch.cuda.manual_seed_all(cfg.random_seed)
 
-def f1_score(y_pred, y_true):
-    epsilon = 1e-7  # to avoid division by zero
-    y_pred = torch.round(y_pred)  # round predicted probabilities to binary labels
-    tp = torch.sum(y_true * y_pred, dim=0)
-    fp = torch.sum((1 - y_true) * y_pred, dim=0)
-    fn = torch.sum(y_true * (1 - y_pred), dim=0)
-    precision = tp / (tp + fp + epsilon)
-    recall = tp / (tp + fn + epsilon)
-    f1 = 2 * precision * recall / (precision + recall + epsilon)
-    return torch.mean(f1)
+# def f1_score(y_pred, y_true):
+#     epsilon = 1e-7  # to avoid division by zero
+#     y_pred = torch.round(y_pred)  # round predicted probabilities to binary labels
+#     tp = torch.sum(y_true * y_pred, dim=0)
+#     fp = torch.sum((1 - y_true) * y_pred, dim=0)
+#     fn = torch.sum(y_true * (1 - y_pred), dim=0)
+#     precision = tp / (tp + fp + epsilon)
+#     recall = tp / (tp + fn + epsilon)
+#     f1 = 2 * precision * recall / (precision + recall + epsilon)
+#     return torch.mean(f1)
 
 def train_model(cfg, model, dataloaders, criterion, optimizer):
     since = time.time()
@@ -190,8 +185,6 @@ def train_model(cfg, model, dataloaders, criterion, optimizer):
     best_scheduler_path = os.path.join(best_checkpoint_path, 'scheduler.pt')
     best_optimizer_path = os.path.join(best_checkpoint_path, 'optimizer.pt')
 
-    f1_metric = MulticlassF1Score(num_classes=CFG.num_classes).to(device)
-
     for epoch in range(cfg.num_epochs):
         print('Epoch {}/{}'.format(epoch, cfg.num_epochs - 1))
         print('-' * 10)
@@ -207,7 +200,7 @@ def train_model(cfg, model, dataloaders, criterion, optimizer):
 
             running_loss = 0.0
             running_corrects = 0
-            total_f1 = 0
+            y_true, y_pred = [], []
 
             # Iterate over data.
             for inputs, labels in tqdm(dataloaders[phase]):
@@ -232,9 +225,8 @@ def train_model(cfg, model, dataloaders, criterion, optimizer):
                         optimizer.step()
 
                     if phase == 'dev':
-                        # f1 = f1_score(outputs, labels)  # compute f1 score
-                        f1 = f1_metric(outputs, labels)
-                        total_f1 += f1.item()
+                        y_true += labels.tolist()
+                        y_pred += preds.tolist()            
 
                 # statistics
                 running_loss += loss.item() * inputs.size(0)
@@ -242,7 +234,7 @@ def train_model(cfg, model, dataloaders, criterion, optimizer):
 
             epoch_loss = running_loss / len(dataloaders[phase].dataset)
             epoch_acc = running_corrects.double() / len(dataloaders[phase].dataset)
-            epoch_f1 = total_f1 / len(dataloaders[phase].dataset)
+            epoch_f1 = f1_score(y_true, y_pred, average='weighted')
 
             wblogdict[f'{phase}/loss'] = np.round(epoch_loss, 4)
             wblogdict[f'{phase}/acc'] = np.round(epoch_acc.cpu(), 4)
@@ -307,6 +299,7 @@ if __name__ == "__main__":
     data_transforms = {
         'train': transforms.Compose([
             transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(degrees=(0, 180)),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
         'dev': transforms.Compose([
@@ -331,7 +324,8 @@ if __name__ == "__main__":
 
     set_seed(CFG)
 
-    model_ft = MaxVitClassifier(CFG, checkpoint=CFG.model_checkpoint)
+    model_ft = MaxVitClassifier(CFG)
+    model_ft.load_state_dict(torch.load(CFG.model_checkpoint))
     model_ft = model_ft.to(device)
 
     params_to_update = model_ft.parameters()

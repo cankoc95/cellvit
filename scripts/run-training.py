@@ -67,7 +67,7 @@ class CFG:
   num_classes = len(class_labels_to_int)
   ### model
   model_name = 'maxvit_large_tf_224'
-  model_checkpoint = CELL_PAINTING_DIR + '/MaxVitModel_ep0.6706739526411658.pth'
+  model_checkpoint = '/dev/shm/2023-04-10/maxvit_large_tf_224/checkpoint-best/MaxVitModel_ep0.6746083788706739.pth'
   # optimizer_checkpoint = CELL_PAINTING_DIR + '/optimizer.pt'
   pretrained=True
   batch_size = 16
